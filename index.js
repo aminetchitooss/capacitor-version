@@ -149,7 +149,7 @@ async function updateVersionForIOS(versionName) {
 }
 
 /**
- * Returns both the bundleVersion and the data of the project.pbxproj File with updated CURRENT_PROJECT_VERSION
+ * Returns both the bundleVersion and the data of the project.pbxproj File with updated CURRENT_PROJECT_VERSION and MARKETING_VERSION
  * @private
  * @param {String} iosFile The data of the project.pbxproj File
  * @param {String} versionName The full version string
@@ -160,6 +160,9 @@ function get_Updated_Version_iOS_proj_File_With_New_Version(iosFile, versionName
   iosFile = iosFile.replace(/CURRENT_PROJECT_VERSION = (.*?);/, (_, capturedValue) => {
     bundleVersion = getNewVersionCode(parseInt(capturedValue, 10), versionName);
     return `CURRENT_PROJECT_VERSION = ${bundleVersion};`;
+  });
+  iosFile = iosFile.replace(/MARKETING_VERSION = (.*?);/, (_, __) => {
+    return `MARKETING_VERSION = ${versionName};`;
   });
 
   return { iosFile, bundleVersion };
