@@ -98,10 +98,13 @@ const Utils = {
     return Math.pow(10, 6) * major + Math.pow(10, 3) * minor + patch;
   },
 
-  handleChangingFileWithPattern: async function (filePath, versionName, functionName) {
+  handleChangingFileWithPattern: async function (filePath, versionName, functionName, newBundleVersion) {
     const fileData = await readFile(filePath, 'utf8');
-    const updatedContent = functionName(fileData, versionName);
-    await Utils.replaceDataFile(filePath, updatedContent, fileData);
+    const updatedContent = newBundleVersion ? functionName(fileData, versionName, newBundleVersion) : functionName(fileData, versionName);
+    if (updatedContent?.iosFile) {
+      await Utils.replaceDataFile(filePath, updatedContent.iosFile, fileData);
+      return { bundleVersion: updatedContent.bundleVersion };
+    } else await Utils.replaceDataFile(filePath, updatedContent, fileData);
   }
 };
 

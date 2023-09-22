@@ -3,7 +3,6 @@ import chalk from 'chalk';
 import gradient from 'gradient-string';
 import figlet from 'figlet';
 import { createSpinner } from 'nanospinner';
-import { readFile } from 'fs/promises';
 import Utils from './utils.js';
 
 async function start() {
@@ -47,17 +46,19 @@ async function updateVersionForIOS(versionName) {
   try {
     let newBundleVersion = 1;
     const pbxProjeFile = await Utils.findFile('ios', 'project.pbxproj', async filePath => {
-      const fileData = await readFile(filePath, 'utf8');
-      const updatedFileAndBundleVersion = get_Updated_Version_iOS_proj_File_With_New_Version(fileData, versionName);
-      newBundleVersion = updatedFileAndBundleVersion.bundleVersion;
-      await Utils.replaceDataFile(filePath, updatedFileAndBundleVersion.iosFile, fileData);
+      const updatedFileAndBundleVersion = await Utils.handleChangingFileWithPattern(
+        filePath,
+        versionName,
+        get_Updated_Version_iOS_proj_File_With_New_Version,
+        null
+      );
+
+      newBundleVersion = updatedFileAndBundleVersion?.bundleVersion;
     });
     if (!pbxProjeFile) throw Error('Make sure you run this command in root folder');
 
     const pListFile = await Utils.findAllFiles('ios', 'Info.plist', [], async filePath => {
-      const fileData = await readFile(filePath, 'utf8');
-      const updatedContent = get_Updated_Version_iOS_pList_File(fileData, versionName, newBundleVersion);
-      await Utils.replaceDataFile(filePath, updatedContent, fileData);
+      await Utils.handleChangingFileWithPattern(filePath, versionName, get_Updated_Version_iOS_pList_File, newBundleVersion);
     });
     if (!pListFile) throw Error('Make sure you run this command in root folder');
   } catch (error) {
@@ -105,7 +106,7 @@ function get_Updated_Version_iOS_pList_File(iosFile, versionName, bundleVersion)
 async function updateVersionForAndroid(versionName) {
   try {
     const androidFile = await Utils.findFile('android/app', 'build.gradle', async filePath => {
-      await Utils.handleChangingFileWithPattern(filePath, versionName, replace_Version_In_gradle_File);
+      await Utils.handleChangingFileWithPattern(filePath, versionName, replace_Version_In_gradle_File, null);
     });
     if (!androidFile) throw Error('Make sure you run this command in root folder');
   } catch (error) {
