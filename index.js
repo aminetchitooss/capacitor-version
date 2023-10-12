@@ -26,12 +26,10 @@ async function start() {
 
 function endProcess(version) {
   figlet(`${version}`, (err, data) => {
-    console.log(gradient.atlas.multiline(data) + '\n');
+    console.log('\n' + chalk.underline('Build Id:') + ' ' + chalk.bgCyan(Utils.buildId) + '\n');
+    console.log(gradient.atlas.multiline(data));
 
-    console.log(
-      chalk.green(`Coding ain't about knowledge; it's about making the command line look cool
-      `)
-    );
+    console.log(chalk.green(`Coding ain't about knowledge; it's about making the command line look cool`));
     process.exit(0);
   });
 }

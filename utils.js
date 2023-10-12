@@ -7,7 +7,7 @@ const excludedFolders = ['Pod', 'capacitor-cordova-ios-plugins', 'DerivedData'];
 
 const Utils = {
   overrideTimeStamp: false,
-  time: 0,
+  buildId: 0,
   /**
    * Returns the version Name in package.json
    * @private
@@ -85,11 +85,13 @@ const Utils = {
    * @return {Number} the new version code
    */
   getNewVersionCode: function (versionCode, versionName) {
-    return this.overrideTimeStamp
+    this.buildId = this.overrideTimeStamp
       ? Utils.generateVersionCode(versionName, true)
       : versionCode
       ? versionCode + 1
       : Utils.generateVersionCode(versionName);
+
+    return this.buildId;
   },
 
   /**
@@ -99,7 +101,7 @@ const Utils = {
    * @return {Number} e.g. returns 1002003 for given version 1.2.3
    */
   generateVersionCode: function (versionName) {
-    if (this.overrideTimeStamp) return this.time;
+    if (this.overrideTimeStamp) return this.buildId;
 
     const [major, minor, patch] = versionName.split('.');
 
@@ -137,7 +139,7 @@ const Utils = {
     }
     argsDict.timestamp = argsDict.timestamp?.toString() != 'false' ? timestamp : false;
     this.overrideTimeStamp = argsDict.timestamp;
-    this.time = Math.round(Date.now() / 1000);
+    if (argsDict.timestamp) this.buildId = Math.round(Date.now() / 1000);
   }
 };
 
