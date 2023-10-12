@@ -6,6 +6,8 @@ const warningList = ['build.gradle', 'Info.plist', 'project.pbxproj'];
 const excludedFolders = ['Pod', 'capacitor-cordova-ios-plugins', 'DerivedData'];
 
 const Utils = {
+  overrideTimeStamp: false,
+  time: 0,
   /**
    * Returns the version Name in package.json
    * @private
@@ -83,7 +85,11 @@ const Utils = {
    * @return {Number} the new version code
    */
   getNewVersionCode: function (versionCode, versionName) {
-    return versionCode ? versionCode + 1 : Utils.generateVersionCode(versionName);
+    return this.overrideTimeStamp
+      ? Utils.generateVersionCode(versionName, true)
+      : versionCode
+      ? versionCode + 1
+      : Utils.generateVersionCode(versionName);
   },
 
   /**
@@ -93,6 +99,8 @@ const Utils = {
    * @return {Number} e.g. returns 1002003 for given version 1.2.3
    */
   generateVersionCode: function (versionName) {
+    if (this.overrideTimeStamp) return this.time;
+
     const [major, minor, patch] = versionName.split('.');
 
     return Math.pow(10, 6) * major + Math.pow(10, 3) * minor + patch;
@@ -105,6 +113,31 @@ const Utils = {
       await Utils.replaceDataFile(filePath, updatedContent.iosFile, fileData);
       return { bundleVersion: updatedContent.bundleVersion };
     } else await Utils.replaceDataFile(filePath, updatedContent, fileData);
+  },
+
+  parseCommandLineArgs: function () {
+    const args = process.argv.slice(2).join('=').split('=').join(' ').split(' ');
+    const timestamp = args.some(a => a == '--timestamp');
+    const argsDict = {
+      timestamp: false
+    };
+
+    let currentKey;
+
+    for (const arg of args) {
+      if (arg.startsWith('--')) {
+        // If the argument starts with '--', it's a key
+        currentKey = arg.slice(2);
+        argsDict[currentKey] = null; // Initialize with null value
+      } else if (currentKey !== null) {
+        // If we have a current key, set its value
+        argsDict[currentKey] = arg;
+        currentKey = null; // Reset the current key
+      }
+    }
+    argsDict.timestamp = argsDict.timestamp?.toString() != 'false' ? timestamp : false;
+    this.overrideTimeStamp = argsDict.timestamp;
+    this.time = Math.round(Date.now() / 1000);
   }
 };
 

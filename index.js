@@ -9,6 +9,7 @@ async function start() {
   const spinner = createSpinner('Versioning your apps and cool stuff..').start();
   try {
     const packageVersion = await Utils.getVersionName();
+    Utils.parseCommandLineArgs();
 
     await updateVersionForAndroid(packageVersion);
 
